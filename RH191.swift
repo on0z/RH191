@@ -1,3 +1,10 @@
+//
+//  RH191.swift
+//
+//  Created by 原園征志 on 2020/12/21.
+//  Copyright © 2020年 原園征志. All rights reserved.
+//
+
 import Foundation
 
 /**
