@@ -11,7 +11,7 @@ type RH191API interface {
 	SetActive(active types.Active)
 	SetMode(mode types.Mode)
 	SetTemperature(temperature types.Temperature) error
-	SetSpped(speed types.Speed)
+	SetSpeed(speed types.Speed)
 	SetDirection(direction types.Direction)
 	SetSound(soundCnt types.Sound)
 	GetBodyBytesSlice() []byte
@@ -86,7 +86,7 @@ func (r *rh191) SetTemperature(temperature types.Temperature) error {
 	return nil
 }
 
-func (r *rh191) SetSpped(speed types.Speed) {
+func (r *rh191) SetSpeed(speed types.Speed) {
 	r.OtherConfigReg &= ^types.SPEED_Msk
 	r.OtherConfigReg |= speed.GetFlag() << types.SPEED_Pos
 }
