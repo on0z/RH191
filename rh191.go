@@ -7,20 +7,13 @@ import (
 	"github.com/on0z/RH191/types"
 )
 
-type Active = types.Active
-type Mode = types.Mode
-type Temperature = types.Temperature
-type Speed = types.Speed
-type Direction = types.Direction
-type Sound = types.Sound
-
 type RH191API interface {
-	SetActive(active Active)
-	SetMode(mode Mode)
-	SetTemperature(temperature Temperature) error
-	SetSpped(speed Speed)
-	SetDirection(direction Direction)
-	SetSound(soundCnt Sound)
+	SetActive(active types.Active)
+	SetMode(mode types.Mode)
+	SetTemperature(temperature types.Temperature) error
+	SetSpped(speed types.Speed)
+	SetDirection(direction types.Direction)
+	SetSound(soundCnt types.Sound)
 	GetBodyBytesSlice() []byte
 	GetBytesSlice() []byte
 	GetHex() string
@@ -53,7 +46,7 @@ type rh191 struct {
 	CheckReg byte
 }
 
-func NewRH191(active Active, mode Mode, temperature Temperature) RH191API {
+func NewRH191(active types.Active, mode types.Mode, temperature types.Temperature) RH191API {
 	r := &rh191{
 		initialBytes: []byte{0x23, 0xCB, 0x26, 0x01, 0x00},
 		Mode2Reg:     0x30,
@@ -66,12 +59,12 @@ func NewRH191(active Active, mode Mode, temperature Temperature) RH191API {
 	return r
 }
 
-func (r *rh191) SetActive(active Active) {
+func (r *rh191) SetActive(active types.Active) {
 	r.ActiveReg &= ^types.ACTIVE_Msk
 	r.ActiveReg |= active.GetFlag() << types.ACTIVE_Pos
 }
 
-func (r *rh191) SetMode(mode Mode) {
+func (r *rh191) SetMode(mode types.Mode) {
 	r.Mode1Reg &= ^types.MODE1_Msk
 	r.Mode1Reg |= mode.GetFlag1() << types.MODE1_Pos
 	r.Mode2Reg &= ^types.MODE2_Msk
@@ -82,7 +75,7 @@ func (r *rh191) SetMode(mode Mode) {
 	}
 }
 
-func (r *rh191) SetTemperature(temperature Temperature) error {
+func (r *rh191) SetTemperature(temperature types.Temperature) error {
 	if err := temperature.Validation(); err != nil {
 		return err
 	}
@@ -93,17 +86,17 @@ func (r *rh191) SetTemperature(temperature Temperature) error {
 	return nil
 }
 
-func (r *rh191) SetSpped(speed Speed) {
+func (r *rh191) SetSpped(speed types.Speed) {
 	r.OtherConfigReg &= ^types.SPEED_Msk
 	r.OtherConfigReg |= speed.GetFlag() << types.SPEED_Pos
 }
 
-func (r *rh191) SetDirection(direction Direction) {
+func (r *rh191) SetDirection(direction types.Direction) {
 	r.OtherConfigReg &= ^types.DIRECTION_Msk
 	r.OtherConfigReg |= ^direction.GetFlag() << types.DIRECTION_Pos
 }
 
-func (r *rh191) SetSound(soundCnt Sound) {
+func (r *rh191) SetSound(soundCnt types.Sound) {
 	r.OtherConfigReg &= ^types.SOUND_Msk
 	r.OtherConfigReg |= soundCnt.GetFlag() << types.SOUND_Pos
 }
