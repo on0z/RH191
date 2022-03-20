@@ -10,9 +10,9 @@ const (
 type Mode uint8
 
 const (
-	MODE_HEAT Mode = iota
-	MODE_DRY
-	MODE_COOL
+	ModeHeat Mode = iota
+	ModeDry
+	ModeCool
 )
 
 func (t *Mode) GetFlag1() byte {
@@ -21,11 +21,11 @@ func (t *Mode) GetFlag1() byte {
 
 func (t *Mode) GetFlag2() byte {
 	switch *t {
-	case MODE_HEAT:
+	case ModeHeat:
 		return 0
-	case MODE_DRY:
+	case ModeDry:
 		return 1
-	case MODE_COOL:
+	case ModeCool:
 		return 3
 	default:
 		return 0

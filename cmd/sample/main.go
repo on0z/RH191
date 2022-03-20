@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	r := librh191.NewRH191(types.On, types.MODE_COOL, 26)
+	r := librh191.NewRH191(types.On, types.ModeCool, 26)
 	hex := r.GetHex()
 	fmt.Println(hex)
 	bin := r.GetBinary()

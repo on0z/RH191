@@ -53,9 +53,9 @@ func NewRH191(active types.Active, mode types.Mode, temperature types.Temperatur
 		blangReg:     []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 	}
 	r.SetActive(active)
-	r.SetMode(mode)
 	r.SetTemperature(temperature)
-	r.SetSound(types.SOUNT_COUNT1)
+	r.SetMode(mode)
+	r.SetSound(types.SoundCount1)
 	return r
 }
 
@@ -70,7 +70,7 @@ func (r *rh191) SetMode(mode types.Mode) {
 	r.Mode2Reg &= ^types.MODE2_Msk
 	r.Mode2Reg |= mode.GetFlag2() << types.MODE2_Pos
 
-	if mode == types.MODE_DRY {
+	if mode == types.ModeDry {
 		r.SetTemperature(24)
 	}
 }
