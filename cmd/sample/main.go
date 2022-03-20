@@ -1,18 +1,20 @@
-# RH191 for golang
+package main
 
-[for swift](#for-swift)
+import (
+	"log"
 
-三菱のエアコンのリモコン RH191 の信号の16進数文字列を生成するスクリプト
+	libadrsir "github.com/on0z/libadrsir-go"
+	"periph.io/x/conn/v3/i2c"
+	"periph.io/x/conn/v3/i2c/i2creg"
+	host "periph.io/x/host/v3"
 
-# How to use
+	librh191 "github.com/on0z/RH191"
+	"github.com/on0z/RH191/types"
+)
 
-see more: [cmd/sample/main.go](./cmd/sample/main.go)
-
-ビットトレードワン赤外線送受信機 ADRSIR を使ってエアコンを操作する場合
-
-```golang
 func main() {
-    // setup periph.io host
+
+	// setup periph.io host
 	_, err := host.Init()
 	if err != nil {
 		log.Fatalf("failed to initialize periph: %v", err)
@@ -44,14 +46,25 @@ func main() {
 	adrsir.Send(adrsirCmd)
 }
 
+/// binaryからADRSIRコードを生成する
+/// - Parameter hex: 送信するHex
+/// - Returns: ADRSIRコード
 func genADRSIRCmd(binary string) string {
-    ...
+	/// 始端
+	adrsir := "83004300"
+
+	/// 1と0をADRSIR表記にする
+	for _, bit := range binary {
+		if bit == '1' {
+			adrsir += "11003200"
+		} else if bit == '0' {
+			adrsir += "11001100"
+		}
+	}
+
+	/// 終端
+	adrsir += "1300EE01"
+
+	/// 2回繰り返して返却する
+	return adrsir + adrsir
 }
-```
-
-# for swift
-
-https://github.com/on0z/RH191/tree/release/swift
-
-# 参考
-リモコンの信号の中身を調べた時のメモ https://qiita.com/on0z/items/4d71ecdee7db3d44a8a9
