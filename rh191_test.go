@@ -211,7 +211,7 @@ func TestRH191GetHex(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			r := NewRH191(c.input.active, c.input.mode, c.input.temperature)
 			if c.input.isSetSpeed {
-				r.SetSpped(c.input.speed)
+				r.SetSpeed(c.input.speed)
 			}
 			if c.input.isSetDirection {
 				r.SetDirection(c.input.direction)
