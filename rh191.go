@@ -93,7 +93,7 @@ func (r *rh191) SetSpped(speed types.Speed) {
 
 func (r *rh191) SetDirection(direction types.Direction) {
 	r.OtherConfigReg &= ^types.DIRECTION_Msk
-	r.OtherConfigReg |= ^direction.GetFlag() << types.DIRECTION_Pos
+	r.OtherConfigReg |= direction.GetFlag() << types.DIRECTION_Pos
 }
 
 func (r *rh191) SetSound(soundCnt types.Sound) {
