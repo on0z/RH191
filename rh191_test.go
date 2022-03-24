@@ -3,6 +3,7 @@ package librh191
 import (
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/on0z/RH191/types"
@@ -11,19 +12,12 @@ import (
 func TestRH191GetHex(t *testing.T) {
 
 	type input struct {
-		active         types.Active
-		mode           types.Mode
-		temperature    types.Temperature
-		isSetSpeed     bool
-		speed          types.Speed
-		isSetDirection bool
-		direction      types.Direction
-		isSetSound     bool
-		sound          types.Sound
+		config *types.CommandConfig
 	}
 
 	type expect struct {
 		Res string
+		Err error
 	}
 
 	cases := []struct {
@@ -34,9 +28,11 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 Auto Auto",
 			input: input{
-				active:      types.On,
-				mode:        types.ModeCool,
-				temperature: 26,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506C0200000000000000B3C4D36480000418506C0200000000000000B3",
@@ -45,11 +41,12 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 27 Auto Auto",
 			input: input{
-				active:      types.On,
-				mode:        types.ModeCool,
-				temperature: 27,
-				isSetSound:  true,
-				sound:       types.SoundCount2,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 27,
+					Sound:       types.SoundCount2,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418D06C010000000000000070C4D36480000418D06C010000000000000070",
@@ -58,9 +55,11 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "除湿  Auto Auto",
 			input: input{
-				active:      types.On,
-				mode:        types.ModeDry,
-				temperature: 24,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeDry,
+					Temperature: 24,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000408104C0200000000000000FDC4D36480000408104C0200000000000000FD",
@@ -69,9 +68,11 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "暖房 20 Auto Auto",
 			input: input{
-				active:      types.On,
-				mode:        types.ModeHeat,
-				temperature: 20,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeHeat,
+					Temperature: 20,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000410200C02000000000000008DC4D36480000410200C02000000000000008D",
@@ -80,9 +81,11 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "Off (冷26AutoAuto)",
 			input: input{
-				active:      types.Off,
-				mode:        types.ModeCool,
-				temperature: 26,
+				config: &types.CommandConfig{
+					Active:      types.Off,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000018506C0200000000000000B5C4D36480000018506C0200000000000000B5",
@@ -91,11 +94,12 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 1 Auto",
 			input: input{
-				active:      types.On,
-				mode:        types.ModeCool,
-				temperature: 26,
-				isSetSpeed:  true,
-				speed:       types.SpeedWeak,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+					Speed:       types.SpeedWeak,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506C820000000000000073C4D36480000418506C820000000000000073",
@@ -104,11 +108,12 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 2 Auto",
 			input: input{
-				active:      types.On,
-				mode:        types.ModeCool,
-				temperature: 26,
-				isSetSpeed:  true,
-				speed:       types.SpeedMiddle,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+					Speed:       types.SpeedMiddle,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506C4200000000000000F3C4D36480000418506C4200000000000000F3",
@@ -117,11 +122,12 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 3 Auto",
 			input: input{
-				active:      types.On,
-				mode:        types.ModeCool,
-				temperature: 26,
-				isSetSpeed:  true,
-				speed:       types.SpeedStrong,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+					Speed:       types.SpeedStrong,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506CC2000000000000000BC4D36480000418506CC2000000000000000B",
@@ -130,11 +136,12 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 Auto 上",
 			input: input{
-				active:         types.On,
-				mode:           types.ModeCool,
-				temperature:    26,
-				isSetDirection: true,
-				direction:      types.DirectionUp,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+					Direction:   types.DirectionUp,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506C1200000000000000ABC4D36480000418506C1200000000000000AB",
@@ -143,11 +150,12 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 Auto 中上",
 			input: input{
-				active:         types.On,
-				mode:           types.ModeCool,
-				temperature:    26,
-				isSetDirection: true,
-				direction:      types.DirectionMiddleUp,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+					Direction:   types.DirectionMiddleUp,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506C0A00000000000000BBC4D36480000418506C0A00000000000000BB",
@@ -156,11 +164,12 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 Auto 中",
 			input: input{
-				active:         types.On,
-				mode:           types.ModeCool,
-				temperature:    26,
-				isSetDirection: true,
-				direction:      types.DirectionMiddle,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+					Direction:   types.DirectionMiddle,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506C1A00000000000000A7C4D36480000418506C1A00000000000000A7",
@@ -169,11 +178,12 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 Auto 中下",
 			input: input{
-				active:         types.On,
-				mode:           types.ModeCool,
-				temperature:    26,
-				isSetDirection: true,
-				direction:      types.DirectionMiddleDown,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+					Direction:   types.DirectionMiddleDown,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506C0600000000000000B7C4D36480000418506C0600000000000000B7",
@@ -182,11 +192,12 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 Auto 下",
 			input: input{
-				active:         types.On,
-				mode:           types.ModeCool,
-				temperature:    26,
-				isSetDirection: true,
-				direction:      types.DirectionDown,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+					Direction:   types.DirectionDown,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506C1600000000000000AFC4D36480000418506C1600000000000000AF",
@@ -195,32 +206,50 @@ func TestRH191GetHex(t *testing.T) {
 		{
 			name: "冷房 26 Auto スイング",
 			input: input{
-				active:         types.On,
-				mode:           types.ModeCool,
-				temperature:    26,
-				isSetDirection: true,
-				direction:      types.DirectionSwing,
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 26,
+					Direction:   types.DirectionSwing,
+				},
 			},
 			expect: expect{
 				Res: "C4D36480000418506C1E00000000000000A0C4D36480000418506C1E00000000000000A0",
+			},
+		},
+		{
+			name: "異常系: 無効な温度",
+			input: input{
+				config: &types.CommandConfig{
+					Active:      types.On,
+					Mode:        types.ModeCool,
+					Temperature: 60,
+				},
+			},
+			expect: expect{
+				Err: errors.New("invalid temperature"),
 			},
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			r := NewRH191(c.input.active, c.input.mode, c.input.temperature)
-			if c.input.isSetSpeed {
-				r.SetSpeed(c.input.speed)
-			}
-			if c.input.isSetDirection {
-				r.SetDirection(c.input.direction)
-			}
-			if c.input.isSetSound {
-				r.SetSound(c.input.sound)
-			}
-			res := r.GetHex()
+			r := NewRH191()
+			res, err := r.GetHex(types.CommandConfig{
+				Active:      c.input.config.Active,
+				Mode:        c.input.config.Mode,
+				Temperature: c.input.config.Temperature,
+				Speed:       c.input.config.Speed,
+				Direction:   c.input.config.Direction,
+				Sound:       c.input.config.Sound,
+			})
 			assert.Equal(t, c.expect.Res, res+res)
+
+			if c.expect.Err != nil {
+				assert.EqualError(t, err, c.expect.Err.Error())
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 

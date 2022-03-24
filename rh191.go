@@ -8,19 +8,13 @@ import (
 )
 
 type RH191API interface {
-	SetActive(active types.Active)
-	SetMode(mode types.Mode)
-	SetTemperature(temperature types.Temperature) error
-	SetSpeed(speed types.Speed)
-	SetDirection(direction types.Direction)
-	SetSound(soundCnt types.Sound)
-	GetBodyBytesSlice() []byte
-	GetBytesSlice() []byte
-	GetHex() string
-	GetBinary() string
+	GetHex(config types.CommandConfig) (string, error)
+	GetBinary(config types.CommandConfig) (string, error)
 }
 
-type rh191 struct {
+type rh191 struct{}
+
+type rh191Command struct {
 	// 0~4バイト目
 	// Default: 0x23, 0xCB, 0x26, 0x01, 0x00
 	initialBytes []byte
@@ -41,98 +35,118 @@ type rh191 struct {
 	OtherConfigReg byte
 	// 10~16バイト目
 	// Default: 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-	blangReg []byte
+	blankReg []byte
 	// 17バイト目
 	CheckReg byte
 }
 
-func NewRH191(active types.Active, mode types.Mode, temperature types.Temperature) RH191API {
-	r := &rh191{
-		initialBytes: []byte{0x23, 0xCB, 0x26, 0x01, 0x00},
-		Mode2Reg:     0x30,
-		blangReg:     []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-	}
-	r.SetActive(active)
-	r.SetTemperature(temperature)
-	r.SetMode(mode)
-	r.SetSound(types.SoundCount1)
-	return r
+func NewRH191() RH191API {
+	return &rh191{}
 }
 
-func (r *rh191) SetActive(active types.Active) {
-	r.ActiveReg &= ^types.ACTIVE_Msk
-	r.ActiveReg |= active.GetFlag() << types.ACTIVE_Pos
+func (_ *rh191) setActive(cmd *rh191Command, active types.Active) *rh191Command {
+	cmd.ActiveReg &= ^types.ACTIVE_Msk
+	cmd.ActiveReg |= active.GetFlag() << types.ACTIVE_Pos
+
+	return cmd
 }
 
-func (r *rh191) SetMode(mode types.Mode) {
-	r.Mode1Reg &= ^types.MODE1_Msk
-	r.Mode1Reg |= mode.GetFlag1() << types.MODE1_Pos
-	r.Mode2Reg &= ^types.MODE2_Msk
-	r.Mode2Reg |= mode.GetFlag2() << types.MODE2_Pos
+func (r *rh191) setMode(cmd *rh191Command, mode types.Mode) *rh191Command {
+	cmd.Mode1Reg &= ^types.MODE1_Msk
+	cmd.Mode1Reg |= mode.GetFlag1() << types.MODE1_Pos
+	cmd.Mode2Reg &= ^types.MODE2_Msk
+	cmd.Mode2Reg |= mode.GetFlag2() << types.MODE2_Pos
 
 	if mode == types.ModeDry {
-		r.SetTemperature(24)
+		r.setTemperature(cmd, 24)
 	}
+
+	return cmd
 }
 
-func (r *rh191) SetTemperature(temperature types.Temperature) error {
+func (_ *rh191) setTemperature(cmd *rh191Command, temperature types.Temperature) (*rh191Command, error) {
 	if err := temperature.Validation(); err != nil {
-		return err
+		return nil, err
 	}
 
-	r.TemperatureReg &= ^types.TEMPERATURE_Msk
-	r.TemperatureReg |= temperature.GetFlag() << types.TEMPERATURE_Pos
+	cmd.TemperatureReg &= ^types.TEMPERATURE_Msk
+	cmd.TemperatureReg |= temperature.GetFlag() << types.TEMPERATURE_Pos
 
-	return nil
+	return cmd, nil
 }
 
-func (r *rh191) SetSpeed(speed types.Speed) {
-	r.OtherConfigReg &= ^types.SPEED_Msk
-	r.OtherConfigReg |= speed.GetFlag() << types.SPEED_Pos
+func (_ *rh191) setSpeed(cmd *rh191Command, speed types.Speed) *rh191Command {
+	cmd.OtherConfigReg &= ^types.SPEED_Msk
+	cmd.OtherConfigReg |= speed.GetFlag() << types.SPEED_Pos
+
+	return cmd
 }
 
-func (r *rh191) SetDirection(direction types.Direction) {
-	r.OtherConfigReg &= ^types.DIRECTION_Msk
-	r.OtherConfigReg |= direction.GetFlag() << types.DIRECTION_Pos
+func (_ *rh191) setDirection(cmd *rh191Command, direction types.Direction) *rh191Command {
+	cmd.OtherConfigReg &= ^types.DIRECTION_Msk
+	cmd.OtherConfigReg |= direction.GetFlag() << types.DIRECTION_Pos
+
+	return cmd
 }
 
-func (r *rh191) SetSound(soundCnt types.Sound) {
-	r.OtherConfigReg &= ^types.SOUND_Msk
-	r.OtherConfigReg |= soundCnt.GetFlag() << types.SOUND_Pos
+func (_ *rh191) setSound(cmd *rh191Command, soundCnt types.Sound) *rh191Command {
+	cmd.OtherConfigReg &= ^types.SOUND_Msk
+	cmd.OtherConfigReg |= soundCnt.GetFlag() << types.SOUND_Pos
+
+	return cmd
 }
 
-func (r *rh191) updateCheckReg() {
-	bytes := r.GetBodyBytesSlice()
-
+func (_ *rh191) updateCheckReg(cmd *rh191Command, bytes []byte) *rh191Command {
 	var sum byte = 0
 	for _, b := range bytes {
 		sum += b
 	}
 
-	r.CheckReg = sum
+	cmd.CheckReg = sum
+
+	return cmd
 }
 
-func (r *rh191) GetBodyBytesSlice() []byte {
+func (_ *rh191) getBodyBytesSlice(cmd *rh191Command) []byte {
 	bytes := []byte{}
-	bytes = append(bytes, r.initialBytes...)
-	bytes = append(bytes, r.ActiveReg)
-	bytes = append(bytes, r.Mode1Reg)
-	bytes = append(bytes, r.TemperatureReg)
-	bytes = append(bytes, r.Mode2Reg)
-	bytes = append(bytes, r.OtherConfigReg)
-	bytes = append(bytes, r.blangReg...)
+	bytes = append(bytes, cmd.initialBytes...)
+	bytes = append(bytes, cmd.ActiveReg)
+	bytes = append(bytes, cmd.Mode1Reg)
+	bytes = append(bytes, cmd.TemperatureReg)
+	bytes = append(bytes, cmd.Mode2Reg)
+	bytes = append(bytes, cmd.OtherConfigReg)
+	bytes = append(bytes, cmd.blankReg...)
 	return bytes
 }
 
-func (r *rh191) GetBytesSlice() []byte {
-	bytes := r.GetBodyBytesSlice()
-	bytes = append(bytes, r.CheckReg)
-	return bytes
+func (r *rh191) assembleBytesSlice(config types.CommandConfig) ([]byte, error) {
+	cmd := &rh191Command{
+		initialBytes: []byte{0x23, 0xCB, 0x26, 0x01, 0x00},
+		Mode2Reg:     types.MODE2_Default,
+		blankReg:     []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	}
+
+	r.setActive(cmd, config.Active)
+	_, err := r.setTemperature(cmd, config.Temperature)
+	if err != nil {
+		return nil, err
+	}
+	r.setMode(cmd, config.Mode)
+	r.setSpeed(cmd, types.Speed(config.Speed))
+	r.setDirection(cmd, types.Direction(config.Direction))
+	r.setSound(cmd, config.Sound)
+
+	bytes := r.getBodyBytesSlice(cmd)
+	r.updateCheckReg(cmd, bytes)
+	bytes = append(bytes, cmd.CheckReg)
+	return bytes, nil
 }
 
-func (r *rh191) GetHex() string {
-	r.updateCheckReg()
-	s := r.GetBytesSlice()
+func (r *rh191) GetHex(config types.CommandConfig) (string, error) {
+	s, err := r.assembleBytesSlice(config)
+	if err != nil {
+		return "", err
+	}
 
 	str := ""
 
@@ -141,12 +155,14 @@ func (r *rh191) GetHex() string {
 		str += fmt.Sprintf("%02X", reved)
 	}
 
-	return str
+	return str, nil
 }
 
-func (r *rh191) GetBinary() string {
-	r.updateCheckReg()
-	s := r.GetBytesSlice()
+func (r *rh191) GetBinary(config types.CommandConfig) (string, error) {
+	s, err := r.assembleBytesSlice(config)
+	if err != nil {
+		return "", err
+	}
 
 	str := ""
 
@@ -155,7 +171,7 @@ func (r *rh191) GetBinary() string {
 		str += fmt.Sprintf("%08b", reved)
 	}
 
-	return str
+	return str, nil
 }
 
 func reverse(s []byte) []byte {

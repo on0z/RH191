@@ -34,10 +34,20 @@ func main() {
 	adrsir := libadrsir.NewADRSIR(d)
 
 	// Configure RH191
-	r := librh191.NewRH191(types.On, types.ModeHeat, 21)
-	r.SetDirection(types.DirectionDown)
+	r := librh191.NewRH191()
 	// Generate Binary
-	bin := r.GetBinary()
+	bin, err := r.GetBinary(types.CommandConfig{
+		Active:      types.On,
+		Mode:        types.ModeHeat,
+		Temperature: 21,
+		Speed:       types.SpeedAuto,
+		Direction:   types.DirectionDown,
+		Sound:       types.SoundCount1,
+	})
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
 
 	// Convert binary to ADRSIR command
 	adrsirCmd := genADRSIRCmd(bin)

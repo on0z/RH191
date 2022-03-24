@@ -1,10 +1,11 @@
 package types
 
 const (
-	MODE1_Pos      = 3
-	MODE1_Msk byte = 0b00011000
-	MODE2_Pos      = 1
-	MODE2_Msk byte = 0b00000110
+	MODE1_Pos          = 3
+	MODE1_Msk     byte = 0b00011000
+	MODE2_Pos          = 1
+	MODE2_Msk     byte = 0b00000110
+	MODE2_Default byte = 0x30
 )
 
 type Mode uint8
