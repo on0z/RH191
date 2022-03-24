@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/on0z/RH191/types"
+	"github.com/on0z/RH191/v2/types"
 )
 
 func TestRH191GetHex(t *testing.T) {

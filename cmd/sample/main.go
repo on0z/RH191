@@ -8,8 +8,8 @@ import (
 	"periph.io/x/conn/v3/i2c/i2creg"
 	host "periph.io/x/host/v3"
 
-	librh191 "github.com/on0z/RH191"
-	"github.com/on0z/RH191/types"
+	librh191 "github.com/on0z/RH191/v2"
+	"github.com/on0z/RH191/v2/types"
 )
 
 func main() {

@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	types "github.com/on0z/RH191/types"
+	types "github.com/on0z/RH191/v2/types"
 )
 
 // MockRH191API is a mock of RH191API interface.

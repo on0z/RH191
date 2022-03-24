@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/bits"
 
-	"github.com/on0z/RH191/types"
+	"github.com/on0z/RH191/v2/types"
 )
 
 type RH191API interface {
