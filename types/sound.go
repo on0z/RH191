@@ -8,10 +8,10 @@ const (
 type Sound uint8
 
 const (
-	SoundCount1 Sound = iota + 1
+	SoundCount1 Sound = iota
 	SoundCount2
 )
 
 func (t *Sound) GetFlag() byte {
-	return byte(*t)
+	return byte(*t + 1)
 }
