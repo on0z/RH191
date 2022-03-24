@@ -1,4 +1,4 @@
-module github.com/on0z/RH191
+module github.com/on0z/RH191/v2
 
 go 1.18
 
